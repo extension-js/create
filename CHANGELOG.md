@@ -1,5 +1,11 @@
 # extension-create
 
+## 2.2.1
+
+### Patch Changes
+
+- 5bd3c7a: Ensure npm provenance badge is visible (single-package publish, OIDC).
+
 ## 2.2.0
 
 ### Minor Changes
