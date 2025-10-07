@@ -1,5 +1,11 @@
 # extension-create
 
+## 2.2.0
+
+### Minor Changes
+
+- 06cd162: - Minor: CI perms + publish pipeline fixes.
+
 ## 2.1.2
 
 ### Patch Changes
