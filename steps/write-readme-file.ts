@@ -5,20 +5,20 @@
 // ╚██████╗██║  ██║███████╗██║  ██║   ██║   ███████╗
 //  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
 
-import * as path from 'path'
-import * as fs from 'fs/promises'
-import * as messages from '../lib/messages'
-import * as utils from '../lib/utils'
+import * as path from "path";
+import * as fs from "fs/promises";
+import * as messages from "../lib/messages";
+import * as utils from "../lib/utils";
 
 export async function writeReadmeFile(
   projectPath: string,
-  projectName: string
+  projectName: string,
 ) {
   // If a README already exists in the target folder, do not overwrite it
   try {
-    await fs.access(path.join(projectPath, 'README.md'))
+    await fs.access(path.join(projectPath, "README.md"));
     // README exists; respect the existing file
-    return
+    return;
   } catch {}
 
   const initTemplateReadme = `
@@ -44,18 +44,26 @@ npm install
 
 ### dev
 
-Run the extension in development mode.
+Run the extension in development mode. You can target a specific browser using the 
+\`--browser <browser>\` flag. Supported values: \`chrome\`, \`firefox\`, \`edge\`.
 
 \`\`\`bash
-[runCommand] dev
+[runCommand] dev --browser chrome
+# or
+[runCommand] dev --browser firefox
+# or
+[runCommand] dev --browser edge
 \`\`\`
 
 ### build
 
-Build the extension for production.
+Build the extension for production. Use \`--browser <browser>\` to select a target.
 
 \`\`\`bash
-[runCommand] build
+[runCommand] build (defaults to Chrome)
+# or use convenience scripts
+[runCommand] build:firefox (Firefox)
+[runCommand] build:edge (Edge)
 \`\`\`
 
 ### Preview
@@ -69,25 +77,25 @@ Preview the extension in the browser.
 ## Learn more
 
 Learn more about this and other examples at @https://extension.js.org/
-  `
+  `;
 
-  const installCommand = await utils.getInstallCommand()
-  const manifestJsonPath = path.join(projectPath, 'manifest.json')
-  const manifestJson = JSON.parse(await fs.readFile(manifestJsonPath, 'utf-8'))
+  const installCommand = await utils.getInstallCommand();
+  const manifestJsonPath = path.join(projectPath, "manifest.json");
+  const manifestJson = JSON.parse(await fs.readFile(manifestJsonPath, "utf-8"));
 
   const readmeFileEdited = initTemplateReadme
-    .replaceAll('[projectName]', projectName)
-    .replaceAll('[templateDescription]', manifestJson.description)
-    .replaceAll('[runCommand]', installCommand)
+    .replaceAll("[projectName]", projectName)
+    .replaceAll("[templateDescription]", manifestJson.description)
+    .replaceAll("[runCommand]", installCommand);
 
   try {
-    console.log(messages.writingReadmeMetaData())
+    console.log(messages.writingReadmeMetaData());
 
     // Ensure path to project exists
-    await fs.mkdir(projectPath, {recursive: true})
-    await fs.writeFile(path.join(projectPath, 'README.md'), readmeFileEdited)
+    await fs.mkdir(projectPath, { recursive: true });
+    await fs.writeFile(path.join(projectPath, "README.md"), readmeFileEdited);
   } catch (error: any) {
-    console.error(messages.writingReadmeMetaDataEError(projectName, error))
-    throw error
+    console.error(messages.writingReadmeMetaDataEError(projectName, error));
+    throw error;
   }
 }

@@ -28,18 +28,18 @@ yarn add extension-create
 Create a new extension with a single function call:
 
 ```javascript
-import {extensionCreate} from 'extension-create'
+import { extensionCreate } from "extension-create";
 
 // Create a basic extension
-await extensionCreate('my-extension', {
-  template: 'init'
-})
+await extensionCreate("my-extension", {
+  template: "init",
+});
 
 // Create a React extension and install its dependencies
-await extensionCreate('my-react-extension', {
-  template: 'react',
-  install: true
-})
+await extensionCreate("my-react-extension", {
+  template: "react",
+  install: true,
+});
 ```
 
 ## API Reference

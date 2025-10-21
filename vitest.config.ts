@@ -1,34 +1,34 @@
-import {defineConfig} from 'vitest/config'
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    pool: 'forks',
+    pool: "forks",
     poolOptions: {
       forks: {
-        singleFork: true
-      }
+        singleFork: true,
+      },
     },
     globals: true,
-    environment: 'node',
-    include: ['**/*.spec.ts'],
+    environment: "node",
+    include: ["**/*.spec.ts"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       exclude: [
-        'node_modules/**',
-        'dist/**',
-        'coverage/**',
-        '**/*.d.ts',
-        '**/*.test.ts',
-        '**/*.spec.ts',
-        '**/types/**',
-        '**/messages.ts',
-        '**/rslib.config.*',
-        '**/vitest.config.*',
-        '**/README.md',
-        '**/CHANGELOG.md',
-        '**/tsconfig.json'
-      ]
-    }
-  }
-})
+        "node_modules/**",
+        "dist/**",
+        "coverage/**",
+        "**/*.d.ts",
+        "**/*.test.ts",
+        "**/*.spec.ts",
+        "**/types/**",
+        "**/messages.ts",
+        "**/rslib.config.*",
+        "**/vitest.config.*",
+        "**/README.md",
+        "**/CHANGELOG.md",
+        "**/tsconfig.json",
+      ],
+    },
+  },
+});

@@ -5,148 +5,148 @@
 // ╚██████╗██║  ██║███████╗██║  ██║   ██║   ███████╗
 //  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
 
-import * as fs from 'fs/promises'
-import * as path from 'path'
-import {fileURLToPath} from 'url'
-import {detect} from 'package-manager-detector'
-import * as messages from './messages'
+import * as fs from "fs/promises";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import { detect } from "package-manager-detector";
+import * as messages from "./messages";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function copyDirectory(source: string, destination: string) {
-  const directoryEntries = await fs.readdir(source, {withFileTypes: true})
-  await fs.mkdir(destination, {recursive: true})
+  const directoryEntries = await fs.readdir(source, { withFileTypes: true });
+  await fs.mkdir(destination, { recursive: true });
 
   return await Promise.all(
     directoryEntries.map(async (entry) => {
-      const sourcePath = path.join(source, entry.name)
-      const destinationPath = path.join(destination, entry.name)
+      const sourcePath = path.join(source, entry.name);
+      const destinationPath = path.join(destination, entry.name);
 
       if (entry.isDirectory()) {
-        await copyDirectory(sourcePath, destinationPath)
+        await copyDirectory(sourcePath, destinationPath);
       } else {
-        await fs.copyFile(sourcePath, destinationPath)
+        await fs.copyFile(sourcePath, destinationPath);
       }
-    })
-  )
+    }),
+  );
 }
 
 export async function copyDirectoryWithSymlinks(
   source: string,
-  destination: string
+  destination: string,
 ) {
-  const entries = await fs.readdir(source, {withFileTypes: true})
-  await fs.mkdir(destination, {recursive: true})
+  const entries = await fs.readdir(source, { withFileTypes: true });
+  await fs.mkdir(destination, { recursive: true });
 
   for (const entry of entries) {
-    const sourcePath = path.join(source, entry.name)
-    const destPath = path.join(destination, entry.name)
+    const sourcePath = path.join(source, entry.name);
+    const destPath = path.join(destination, entry.name);
 
     if (entry.isDirectory()) {
-      await copyDirectoryWithSymlinks(sourcePath, destPath)
+      await copyDirectoryWithSymlinks(sourcePath, destPath);
     } else if (entry.isSymbolicLink()) {
-      const target = await fs.readlink(sourcePath)
-      await fs.symlink(target, destPath)
+      const target = await fs.readlink(sourcePath);
+      await fs.symlink(target, destPath);
     } else {
-      await fs.copyFile(sourcePath, destPath)
+      await fs.copyFile(sourcePath, destPath);
     }
   }
 }
 
 export async function moveDirectoryContents(
   source: string,
-  destination: string
+  destination: string,
 ) {
-  await fs.mkdir(destination, {recursive: true})
+  await fs.mkdir(destination, { recursive: true });
 
-  const entries = await fs.readdir(source, {withFileTypes: true})
+  const entries = await fs.readdir(source, { withFileTypes: true });
 
   for (const entry of entries) {
-    const sourcePath = path.join(source, entry.name)
-    const destPath = path.join(destination, entry.name)
+    const sourcePath = path.join(source, entry.name);
+    const destPath = path.join(destination, entry.name);
 
     if (entry.isDirectory()) {
       // Recursively move subdirectories
-      await moveDirectoryContents(sourcePath, destPath)
+      await moveDirectoryContents(sourcePath, destPath);
     } else if (entry.isSymbolicLink()) {
-      const target = await fs.readlink(sourcePath)
-      await fs.symlink(target, destPath)
+      const target = await fs.readlink(sourcePath);
+      await fs.symlink(target, destPath);
     } else {
       // Move files with EXDEV (cross-device) fallback to copy+unlink
       try {
-        await fs.rename(sourcePath, destPath)
+        await fs.rename(sourcePath, destPath);
       } catch (err: any) {
-        if (err && (err.code === 'EXDEV' || err.code === 'EINVAL')) {
-          await fs.copyFile(sourcePath, destPath)
-          await fs.rm(sourcePath, {force: true})
+        if (err && (err.code === "EXDEV" || err.code === "EINVAL")) {
+          await fs.copyFile(sourcePath, destPath);
+          await fs.rm(sourcePath, { force: true });
         } else {
-          throw err
+          throw err;
         }
       }
     }
   }
 
   // Remove the now-empty source directory
-  await fs.rm(source, {recursive: true, force: true})
+  await fs.rm(source, { recursive: true, force: true });
 }
 
 export async function getInstallCommand() {
-  const pm = await detect()
+  const pm = await detect();
 
-  let command = 'npm'
+  let command = "npm";
 
   if (process.env.npm_config_user_agent) {
-    if (process.env.npm_config_user_agent.includes('pnpm')) {
-      return 'pnpm'
+    if (process.env.npm_config_user_agent.includes("pnpm")) {
+      return "pnpm";
     }
   }
 
   switch (pm?.name) {
-    case 'yarn':
-      command = 'yarn'
-      break
-    case 'pnpm':
-      command = 'pnpm'
-      break
+    case "yarn":
+      command = "yarn";
+      break;
+    case "pnpm":
+      command = "pnpm";
+      break;
     default:
-      command = 'npm'
+      command = "npm";
   }
 
-  return command
+  return command;
 }
 
 export function getTemplatePath(workingDir: string) {
-  const templatesDir = path.resolve(__dirname, '..', 'template')
-  return path.resolve(workingDir, templatesDir)
+  const templatesDir = path.resolve(__dirname, "..", "template");
+  return path.resolve(workingDir, templatesDir);
 }
 
 export async function isDirectoryWriteable(
   directory: string,
-  projectName: string
+  projectName: string,
 ): Promise<boolean> {
   try {
-    console.log(messages.folderExists(projectName))
+    console.log(messages.folderExists(projectName));
 
-    await fs.mkdir(directory, {recursive: true})
+    await fs.mkdir(directory, { recursive: true });
 
-    return true
+    return true;
   } catch (err) {
-    console.log(messages.writingDirectoryError(err))
-    return false
+    console.log(messages.writingDirectoryError(err));
+    return false;
   }
 }
 
 export function isExternalTemplate(_templateName: string) {
-  return true
+  return true;
 }
 
 export function isTypeScriptTemplate(templateName: string) {
   return (
-    templateName.includes('typescript') ||
-    templateName.includes('react') ||
-    templateName.includes('preact') ||
-    templateName.includes('svelte') ||
-    templateName.includes('solid')
-  )
+    templateName.includes("typescript") ||
+    templateName.includes("react") ||
+    templateName.includes("preact") ||
+    templateName.includes("svelte") ||
+    templateName.includes("solid")
+  );
 }

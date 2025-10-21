@@ -5,60 +5,60 @@
 // ╚██████╗██║  ██║███████╗██║  ██║   ██║   ███████╗
 //  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
 
-import * as path from 'path'
-import * as fs from 'fs/promises'
-import * as messages from '../lib/messages'
-import * as utils from '../lib/utils'
+import * as path from "path";
+import * as fs from "fs/promises";
+import * as messages from "../lib/messages";
+import * as utils from "../lib/utils";
 
-const allowlist = ['LICENSE', 'node_modules']
+const allowlist = ["LICENSE", "node_modules"];
 
 export async function createDirectory(
   projectPath: string,
-  projectName: string
+  projectName: string,
 ) {
-  console.log(messages.startingNewExtension(projectName))
+  console.log(messages.startingNewExtension(projectName));
 
   try {
     const isCurrentDirWriteable = await utils.isDirectoryWriteable(
       projectPath,
-      projectName
-    )
+      projectName,
+    );
 
-    console.log(messages.checkingIfPathIsWriteable())
+    console.log(messages.checkingIfPathIsWriteable());
 
     if (!isCurrentDirWriteable) {
-      console.error(messages.destinationNotWriteable(projectPath))
-      throw new Error(messages.destinationNotWriteable(projectPath))
+      console.error(messages.destinationNotWriteable(projectPath));
+      throw new Error(messages.destinationNotWriteable(projectPath));
     }
 
-    const currentDir = await fs.readdir(projectPath)
+    const currentDir = await fs.readdir(projectPath);
 
-    console.log(messages.scanningPossiblyConflictingFiles())
+    console.log(messages.scanningPossiblyConflictingFiles());
 
     const conflictingFiles = await Promise.all(
       currentDir
         // .gitignore, .DS_Store, etc
-        .filter((file) => !file.startsWith('.'))
+        .filter((file) => !file.startsWith("."))
         // Logs of yarn/npm
-        .filter((file) => !file.endsWith('.log'))
+        .filter((file) => !file.endsWith(".log"))
         // Whatever we think is appropriate
         .filter((file) => !allowlist.includes(file))
         .map(async (file) => {
-          const stats = await fs.lstat(path.join(projectPath, file))
-          return stats.isDirectory() ? `${file}/` : `${file}`
-        })
-    )
+          const stats = await fs.lstat(path.join(projectPath, file));
+          return stats.isDirectory() ? `${file}/` : `${file}`;
+        }),
+    );
 
     // If directory has conflicting files, abort
     if (conflictingFiles.length > 0) {
       const conflictMessage = await messages.directoryHasConflicts(
         projectPath,
-        conflictingFiles
-      )
-      throw new Error(conflictMessage)
+        conflictingFiles,
+      );
+      throw new Error(conflictMessage);
     }
   } catch (error: any) {
     // Re-throw a single formatted error so callers log it once
-    throw new Error(messages.createDirectoryError(projectName, error))
+    throw new Error(messages.createDirectoryError(projectName, error));
   }
 }
